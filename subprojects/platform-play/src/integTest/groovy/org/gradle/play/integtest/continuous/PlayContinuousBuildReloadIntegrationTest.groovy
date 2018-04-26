@@ -15,10 +15,6 @@
  */
 
 package org.gradle.play.integtest.continuous
-
-import org.gradle.internal.filewatch.PendingChangesManager
-import org.gradle.test.fixtures.ConcurrentTestUtil
-
 /**
  * Test Play reload with `--continuous`
  */
@@ -26,32 +22,15 @@ class PlayContinuousBuildReloadIntegrationTest extends AbstractPlayReloadIntegra
 
     protected static final String PENDING_DETECTED_MESSAGE = 'Pending changes detected'
 
-    int pendingChangesMarker
-
     def setup() {
-        buildFile << """
-                def pendingChangesManager = gradle.services.get(${PendingChangesManager.canonicalName})
-                pendingChangesManager.addListener {
-                    println "$PENDING_DETECTED_MESSAGE"
-                }
-        """
+        server.start()
+        addPendingChangesHook()
     }
 
-    protected int waitForChangesToBePickedUp() {
-        waitForConditionSatisfied { output -> output.contains(PENDING_DETECTED_MESSAGE) }
-    }
-
-    protected int waitForBuildFinish() {
-        waitForConditionSatisfied { output -> output ==~ /(?s).*BUILD (FAILED|SUCCESSFUL) in.*/ }
-    }
-
-    private int waitForConditionSatisfied(Closure predicate){
-        def buildOutput = ''
-        ConcurrentTestUtil.poll {
-            buildOutput = buildOutputSoFar()
-            assert predicate(buildOutput.substring(pendingChangesMarker))
-        }
-        pendingChangesMarker = buildOutput.length()
+    protected void changeAndWaitForPending(Closure changer) {
+        def changeDelivered = changesReported()
+        changer()
+        changeDelivered.waitForAllPendingCalls()
     }
 
     def "should reload modified scala controller and routes and restart server"() {
@@ -62,8 +41,9 @@ class PlayContinuousBuildReloadIntegrationTest extends AbstractPlayReloadIntegra
         appIsRunningAndDeployed()
 
         when:
-        addNewRoute('hello')
-        waitForChangesToBePickedUp()
+        changeAndWaitForPending {
+            addNewRoute('hello')
+        }
         def page = runningApp.playUrl('hello').text
         serverRestart()
 
@@ -78,19 +58,21 @@ class PlayContinuousBuildReloadIntegrationTest extends AbstractPlayReloadIntegra
         appIsRunningAndDeployed()
 
         when:
-        addBadCode()
-        waitForChangesToBePickedUp()
-
+        changeAndWaitForPending {
+            addBadCode()
+        }
         then:
         println "CHECKING ERROR PAGE"
         errorPageHasTaskFailure("compilePlayBinaryScala")
-        waitForBuildFinish()
+        waitForBuild()
         serverStartCount == 1
         !executedTasks.contains('runPlayBinary')
 
         when:
-        fixBadCode()
-        waitForChangesToBePickedUp()
+        changeAndWaitForPending {
+            fixBadCode()
+        }
+
         runningApp.playUrl().text
         serverRestart()
         println "CHANGES DETECTED IN BUILD"
@@ -109,11 +91,12 @@ class PlayContinuousBuildReloadIntegrationTest extends AbstractPlayReloadIntegra
         !runningApp.playUrl('assets/javascripts/test.min.js').text.contains('Hello coffeescript')
 
         when:
-        file("app/assets/javascripts/test.coffee") << '''
+        changeAndWaitForPending {
+            file("app/assets/javascripts/test.coffee") << '''
 message = "Hello coffeescript"
 alert message
 '''
-        waitForChangesToBePickedUp()
+        }
 
         def testJs = runningApp.playUrl('assets/javascripts/test.js').text
         def testMinJs = runningApp.playUrl('assets/javascripts/test.min.js').text
@@ -132,10 +115,11 @@ alert message
         appIsRunningAndDeployed()
 
         when:
-        file("app/assets/javascripts/helloworld.js") << '''
+        changeAndWaitForPending {
+            file("app/assets/javascripts/helloworld.js") << '''
 var message = "Hello JS";
 '''
-        waitForChangesToBePickedUp()
+        }
 
         def helloworldJs = runningApp.playUrl('assets/javascripts/helloworld.js').text
         def helloworldMinJs = runningApp.playUrl('assets/javascripts/helloworld.min.js').text
@@ -155,10 +139,11 @@ var message = "Hello JS";
         assert runningApp.playUrl().text.contains("<li>foo:1</li>")
 
         when:
-        file("app/models/DataType.java").with {
-            text = text.replaceFirst(~/"%s:%s"/, '"Hello %s:%s !"')
+        changeAndWaitForPending {
+            file("app/models/DataType.java").with {
+                text = text.replaceFirst(~/"%s:%s"/, '"Hello %s:%s !"')
+            }
         }
-        waitForChangesToBePickedUp()
 
         def page = runningApp.playUrl().text
         serverRestart()
@@ -175,10 +160,11 @@ var message = "Hello JS";
         appIsRunningAndDeployed()
 
         when:
-        file("app/views/index.scala.html").with {
-            text = text.replaceFirst(~/Welcome to Play/, 'Welcome to Play with Gradle')
+        changeAndWaitForPending {
+            file("app/views/index.scala.html").with {
+                text = text.replaceFirst(~/Welcome to Play/, 'Welcome to Play with Gradle')
+            }
         }
-        waitForChangesToBePickedUp()
         def page = runningApp.playUrl().text
         serverRestart()
 
@@ -205,8 +191,9 @@ task otherTask {
         appIsRunningAndDeployed()
 
         when:
-        addNewRoute('hello')
-        waitForChangesToBePickedUp()
+        changeAndWaitForPending {
+            addNewRoute('hello')
+        }
 
         then:
         errorPageHasTaskFailure("otherTask")
