@@ -115,9 +115,6 @@ open class BuildScanPlugin : Plugin<Project> {
                 system("git", "rev-parse", "--verify", "HEAD").let { commitId ->
                     setCommitId(commitId)
                 }
-            },
-
-            async {
                 system("git", "status", "--porcelain").let { status ->
                     if (status.isNotEmpty()) {
                         buildScan {
