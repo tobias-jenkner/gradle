@@ -20,8 +20,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import groovy.lang.Closure;
 import org.gradle.api.Action;
+import org.gradle.api.ActionConfiguration;
 import org.gradle.api.InvalidUserCodeException;
 import org.gradle.api.artifacts.ComponentMetadataDetails;
+import org.gradle.api.artifacts.ComponentMetadataRule;
 import org.gradle.api.artifacts.ModuleIdentifier;
 import org.gradle.api.artifacts.dsl.ComponentMetadataHandler;
 import org.gradle.api.artifacts.ivy.IvyModuleDescriptor;
@@ -131,6 +133,26 @@ public class DefaultComponentMetadataHandler implements ComponentMetadataHandler
 
     public ComponentMetadataHandler withModule(Object id, Object ruleSource) {
         return addRule(createSpecRuleActionForModule(id, ruleActionAdapter.createFromRuleSource(ComponentMetadataDetails.class, ruleSource)));
+    }
+
+    @Override
+    public ComponentMetadataHandler all(Class<? extends ComponentMetadataRule> rule) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ComponentMetadataHandler all(Class<? extends ComponentMetadataRule> rule, Action<? super ActionConfiguration> configureAction) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ComponentMetadataHandler withModule(Object id, Class<? extends ComponentMetadataRule> rule) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ComponentMetadataHandler withModule(Object id, Class<? extends ComponentMetadataRule> rule, Action<? super ActionConfiguration> configureAction) {
+        throw new UnsupportedOperationException();
     }
 
     public ModuleComponentResolveMetadata processMetadata(ModuleComponentResolveMetadata metadata) {
