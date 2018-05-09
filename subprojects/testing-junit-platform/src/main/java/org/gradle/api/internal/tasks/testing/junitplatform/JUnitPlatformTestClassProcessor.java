@@ -53,7 +53,6 @@ import static org.junit.platform.launcher.TagFilter.includeTags;
 
 public class JUnitPlatformTestClassProcessor extends AbstractJUnitTestClassProcessor<JUnitPlatformSpec> {
     private TestResultProcessor resultProcessor;
-    private TestClassExecutionListener executionListener;
     private CollectAllTestClassesExecutor testClassExecutor;
 
     public JUnitPlatformTestClassProcessor(JUnitPlatformSpec spec, IdGenerator<?> idGenerator, ActorFactory actorFactory, Clock clock) {
@@ -63,7 +62,6 @@ public class JUnitPlatformTestClassProcessor extends AbstractJUnitTestClassProce
     @Override
     protected Action<String> createTestExecutor(TestResultProcessor threadSafeResultProcessor, TestClassExecutionListener threadSafeTestClassListener) {
         resultProcessor = threadSafeResultProcessor;
-        executionListener = threadSafeTestClassListener;
         testClassExecutor = new CollectAllTestClassesExecutor();
         return testClassExecutor;
     }
@@ -88,7 +86,7 @@ public class JUnitPlatformTestClassProcessor extends AbstractJUnitTestClassProce
 
         private void processAllTestClasses() {
             Launcher launcher = LauncherFactory.create();
-            launcher.registerTestExecutionListeners(new JUnitPlatformTestExecutionListener(resultProcessor, clock, idGenerator, executionListener));
+            launcher.registerTestExecutionListeners(new JUnitPlatformTestExecutionListener(resultProcessor, clock, idGenerator));
             launcher.execute(createLauncherDiscoveryRequest(testClasses));
         }
     }
