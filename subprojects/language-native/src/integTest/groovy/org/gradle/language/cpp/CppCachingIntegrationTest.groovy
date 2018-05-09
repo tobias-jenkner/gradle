@@ -80,6 +80,31 @@ class CppCachingIntegrationTest extends AbstractInstalledToolChainIntegrationSpe
         buildType << [debug, release]
     }
 
+    def 'debug compilation has debugging symbols'() {
+        setupProject()
+
+        when:
+        withBuildCache().run compileTask(debug)
+
+        then:
+        compileIsNotCached(debug)
+        assertDebugFileExists()
+
+        when:
+        withBuildCache().run 'clean', installTask(debug)
+        then:
+        compileIsCached(debug)
+        // TODO: Remove
+        assert false
+        assertDebugFileExists()
+    }
+
+    void assertDebugFileExists() {
+        if (toolChain.isVisualCpp()) {
+            // TODO: Figure out how to look for this
+        }
+    }
+
     def "compilation task is relocatable for release"() {
 
         def originalLocation = file('original-location')
