@@ -1,4 +1,4 @@
- - Incremental annotation processing
- - JDK 10 support
- - Grouped non-interactive console logs
- - Failed tests are re-run first for quicker feedback
+ - Dependency locking
+ - Incremental annotation processing enhancements
+ - Improved maven-publish, ivy-publish, and signing plugins
+ - Immutable task APIs
