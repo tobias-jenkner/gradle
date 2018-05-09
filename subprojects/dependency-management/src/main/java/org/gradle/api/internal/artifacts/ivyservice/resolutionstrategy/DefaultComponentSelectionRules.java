@@ -54,14 +54,14 @@ public class DefaultComponentSelectionRules implements ComponentSelectionRulesIn
     private MutationValidator mutationValidator = MutationValidator.IGNORE;
     private Set<SpecRuleAction<? super ComponentSelection>> rules;
 
-    private final RuleActionAdapter<ComponentSelection> ruleActionAdapter;
+    private final RuleActionAdapter ruleActionAdapter;
     private final NotationParser<Object, ModuleIdentifier> moduleIdentifierNotationParser;
 
     public DefaultComponentSelectionRules(ImmutableModuleIdentifierFactory moduleIdentifierFactory) {
         this(moduleIdentifierFactory, createAdapter());
     }
 
-    protected DefaultComponentSelectionRules(ImmutableModuleIdentifierFactory moduleIdentifierFactory, RuleActionAdapter<ComponentSelection> ruleActionAdapter) {
+    protected DefaultComponentSelectionRules(ImmutableModuleIdentifierFactory moduleIdentifierFactory, RuleActionAdapter ruleActionAdapter) {
         this.ruleActionAdapter = ruleActionAdapter;
         this.moduleIdentifierNotationParser = NotationParserBuilder
             .toType(ModuleIdentifier.class)
@@ -76,9 +76,9 @@ public class DefaultComponentSelectionRules implements ComponentSelectionRulesIn
         this.mutationValidator = mutationValidator;
     }
 
-    private static RuleActionAdapter<ComponentSelection> createAdapter() {
-        RuleActionValidator<ComponentSelection> ruleActionValidator = new DefaultRuleActionValidator<ComponentSelection>(Lists.newArrayList(ComponentMetadata.class, IvyModuleDescriptor.class));
-        return new DefaultRuleActionAdapter<ComponentSelection>(ruleActionValidator, "ComponentSelectionRules");
+    private static RuleActionAdapter createAdapter() {
+        RuleActionValidator ruleActionValidator = new DefaultRuleActionValidator(Lists.newArrayList(ComponentMetadata.class, IvyModuleDescriptor.class));
+        return new DefaultRuleActionAdapter(ruleActionValidator, "ComponentSelectionRules");
     }
 
     public Collection<SpecRuleAction<? super ComponentSelection>> getRules() {
