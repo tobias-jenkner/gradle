@@ -55,7 +55,7 @@ class DaemonInitScriptHandlingIntegrationTest extends DaemonIntegrationSpec {
         }
     }
 
-    def "init scripts from client distribution are used, not from the test"() {
+    def "init scripts from client distribution are used, not the one the daemon was started with"() {
         given:
         def distro1 = createDistribution(1)
         def distro2 = createDistribution(2)
