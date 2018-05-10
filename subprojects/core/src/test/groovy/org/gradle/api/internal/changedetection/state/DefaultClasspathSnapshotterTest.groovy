@@ -17,6 +17,7 @@
 package org.gradle.api.internal.changedetection.state
 
 import org.gradle.api.internal.cache.StringInterner
+import org.gradle.api.internal.classpath.ModuleRegistry
 import org.gradle.api.internal.file.TestFiles
 import org.gradle.api.internal.file.collections.ImmutableFileCollection
 import org.gradle.internal.hash.HashCode
@@ -44,7 +45,7 @@ class DefaultClasspathSnapshotterTest extends Specification {
     def directoryFileTreeFactory = TestFiles.directoryFileTreeFactory()
     def fileSystemMirror = new DefaultFileSystemMirror([])
     def fileHasher = new TestFileHasher()
-    def fileSystemSnapshotter = new DefaultFileSystemSnapshotter(fileHasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror)
+    def fileSystemSnapshotter = new DefaultFileSystemSnapshotter(Stub(ModuleRegistry), fileHasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror)
     InMemoryIndexedCache<HashCode, HashCode> resourceHashesCache = new InMemoryIndexedCache<>(new HashCodeSerializer())
     def cacheService = new ResourceSnapshotterCacheService(resourceHashesCache)
     def snapshotter = new DefaultClasspathSnapshotter(

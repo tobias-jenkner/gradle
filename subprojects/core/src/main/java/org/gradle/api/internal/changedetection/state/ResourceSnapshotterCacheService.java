@@ -31,6 +31,14 @@ public class ResourceSnapshotterCacheService {
     }
 
     public HashCode hashFile(RegularFileSnapshot fileSnapshot, RegularFileHasher hasher, HashCode configurationHash) {
+        if (fileSnapshot instanceof GradleModuleFileSnapshot) {
+            return fileSnapshot.getContent().getContentMd5();
+        } else {
+            return hashRegularFile(fileSnapshot, hasher, configurationHash);
+        }
+    }
+
+    private HashCode hashRegularFile(RegularFileSnapshot fileSnapshot, RegularFileHasher hasher, HashCode configurationHash) {
         HashCode resourceHashCacheKey = resourceHashCacheKey(fileSnapshot, configurationHash);
 
         HashCode resourceHash = persistentCache.get(resourceHashCacheKey);

@@ -25,6 +25,7 @@ import org.gradle.api.file.FileVisitDetails;
 import org.gradle.api.file.FileVisitor;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.internal.cache.StringInterner;
+import org.gradle.api.internal.classpath.ModuleRegistry;
 import org.gradle.api.internal.file.FileTreeInternal;
 import org.gradle.api.internal.file.collections.DirectoryFileTree;
 import org.gradle.api.internal.file.collections.DirectoryFileTreeFactory;
@@ -58,6 +59,7 @@ import java.util.List;
  * The implementations are currently intentionally very, very simple, and so there are a number of ways in which they can be made much more efficient. This can happen over time.
  */
 public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
+    private final ModuleRegistry moduleRegistry;
     private final FileHasher hasher;
     private final StringInterner stringInterner;
     private final FileSystem fileSystem;
@@ -68,7 +70,8 @@ public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
     private final ProducerGuard<String> producingAllSnapshots = ProducerGuard.striped();
     private final DefaultGenericFileCollectionSnapshotter snapshotter;
 
-    public DefaultFileSystemSnapshotter(FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
+    public DefaultFileSystemSnapshotter(ModuleRegistry moduleRegistry, FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
+        this.moduleRegistry = moduleRegistry;
         this.hasher = hasher;
         this.stringInterner = stringInterner;
         this.fileSystem = fileSystem;
@@ -227,6 +230,9 @@ public class DefaultFileSystemSnapshotter implements FileSystemSnapshotter {
 
     private FileSnapshot calculateDetails(File file) {
         String path = internPath(file);
+        if (moduleRegistry.isModule(file)) {
+            return new GradleModuleFileSnapshot(path, file);
+        }
         FileMetadataSnapshot stat = fileSystem.stat(file);
         switch (stat.getType()) {
             case Missing:

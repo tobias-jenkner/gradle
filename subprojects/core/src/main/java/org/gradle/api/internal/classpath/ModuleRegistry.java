@@ -18,6 +18,7 @@ package org.gradle.api.internal.classpath;
 import org.gradle.internal.classpath.ClassPath;
 
 import javax.annotation.Nullable;
+import java.io.File;
 
 /**
  * A registry of dynamically loadable modules.
@@ -50,4 +51,6 @@ public interface ModuleRegistry {
      * Returns the classpath used to search for modules, in addition to default locations in the Gradle distribution (if available). May be empty.
      */
     ClassPath getAdditionalClassPath();
+
+    boolean isModule(File file);
 }

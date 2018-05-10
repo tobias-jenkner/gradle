@@ -144,8 +144,8 @@ public class GradleUserHomeScopeServices {
         return fileSystemMirror;
     }
 
-    FileSystemSnapshotter createFileSystemSnapshotter(FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
-        return new DefaultFileSystemSnapshotter(hasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror);
+    FileSystemSnapshotter createFileSystemSnapshotter(ModuleRegistry moduleRegistry, FileHasher hasher, StringInterner stringInterner, FileSystem fileSystem, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemMirror fileSystemMirror) {
+        return new DefaultFileSystemSnapshotter(moduleRegistry, hasher, stringInterner, fileSystem, directoryFileTreeFactory, fileSystemMirror);
     }
 
     GenericFileCollectionSnapshotter createGenericFileCollectionSnapshotter(StringInterner stringInterner, DirectoryFileTreeFactory directoryFileTreeFactory, FileSystemSnapshotter fileSystemSnapshotter) {
