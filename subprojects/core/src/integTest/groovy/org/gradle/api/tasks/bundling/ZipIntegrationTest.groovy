@@ -26,6 +26,12 @@ import java.nio.charset.Charset
 
 @TestReproducibleArchives
 class ZipIntegrationTest extends AbstractIntegrationSpec {
+    def setup() {
+        System.err.println("envs: ")
+        System.err.println(System.getenv())
+        System.err.println("properties: ")
+        System.err.println(System.getProperties())
+    }
 
     def ensureDuplicatesIncludedWithoutWarning() {
         given:
