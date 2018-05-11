@@ -42,16 +42,16 @@ public class LockFileReaderWriter {
 
     public LockFileReaderWriter(FileResolver fileResolver) {
         Path resolve = null;
-        try {
+        if (fileResolver.canResolveRelativePath()) {
             resolve = fileResolver.resolve(DEPENDENCY_LOCKING_FOLDER).toPath();
-        } catch (UnsupportedOperationException e) {
-            // TODO Investigate if locking and no base dir can happen together
         }
         this.lockFilesRoot = resolve;
         LOGGER.debug("Lockfiles root: {}", lockFilesRoot);
     }
 
     public void writeLockFile(String configurationName, List<String> resolvedModules) {
+        checkValidRoot();
+
         if (!Files.exists(lockFilesRoot)) {
             try {
                 Files.createDirectories(lockFilesRoot);
@@ -71,6 +71,8 @@ public class LockFileReaderWriter {
     }
 
     public List<String> readLockFile(String configurationName) {
+        checkValidRoot();
+
         try {
             Path lockFile = lockFilesRoot.resolve(configurationName + FILE_SUFFIX);
             if (Files.exists(lockFile)) {
@@ -84,6 +86,12 @@ public class LockFileReaderWriter {
             throw new RuntimeException("Unable to load lock file", e);
         }
 
+    }
+
+    private void checkValidRoot() {
+        if (lockFilesRoot == null) {
+            throw new IllegalStateException("Dependency locking could not determine project root and thus cannot be used.");
+        }
     }
 
     private void filterNonModuleLines(List<String> lines) {
